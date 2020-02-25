@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Sentiment Analysis</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="./static/bootstrap.min.css">
+    <script src="./static/jquery.min.js"></script>
+    <script src="./static/popper.min.js"></script>
+    <script src="./static/bootstrap.min.js"></script>
+    <style>
+        label {
+            text-align: right;
+            clear: both;
+            float: left;
+            margin-right: 15px;
+        }
+
+        div {
+            align-items: initial;
+        }
+
+        html,
+        body {
+            height: 100%
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="card-header text-center bg-primary text-white" style="padding: 35px">
+            <h1> <b>Sentiment Analysis</b></h1>
+            <p>Predict sentiment for text of various sources</p>
+        </div>
+    </header>
+    <!-- <div class="container col-md-5 col-md-offset-4" style="padding: 35px">  -->
+    <table style="width: 100%; height: 77%;" rules="cols">
+        <tr>
+            <td width="50%" valign="top" style="font-weight: bold;">
+                <center><h1 style="align-content: center;padding: 1%; font-weight: bolder;"> Input Text </h1></center>
+                <div class="container col-md-15 col-md-offset-5" style="padding: 35px">
+                    <form method="POST" name="formPredict" id="formPredict" action="formPredict" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <div class="row">
+                                <div class="col"><label for="source">Input source</label></div>
+                                <div class="col"><select name="source" id="source" onchange="sourceChange(source)"
+                                        required>
+                                        <option selected>Select a value</option>
+                                        <option value="Audio">Text from Audio</option>
+                                        <option value="Image">Text from Image</option>
+                                        <option value="File">Text / Excel File Upload</option>
+                                        <option value="News">Google News</option>
+                                        <option value="ManualText">Manual Text</option>
+                                        <option value="Twitter">Live Twitter Feed</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="divAudio" style="display:none" class="form-group">
+                            <div class="row">
+                                <div class="col"> <label for="audioUpload">Upload Audio [mp3, wav]</label></div>
+                                <div class="col"><input type="file" name="audioUpload" id="audioUpload"></div>
+                            </div>
+                        </div>
+                        <div id="divImage" style="display:none" class="form-group">
+                            <div class="row">
+                                <div class="col"> <label for="imageUpload">Upload Image [jp(e)g, png, gif]</label></div>
+                                <div class="col"><input type="file" name="imageUpload" id="imageUpload"></div>
+                            </div>
+                        </div>
+                        <div id="divManualText" style="display:none" class="form-group">
+                            <div class="row">
+                                <div class="col"><label for="manualText">Enter text to predict</label></div>
+                                <div class="col"> <textarea rows="5" name="manualText" id="manualText"></textarea></div>
+                            </div>
+                        </div>
+                        <div id="divNews" style="display:none" class="form-group">
+                            <div class="row">
+                                <div class="col"> <label for="newsLang">Language</label>
+                                </div>
+                                <div class="col"> <select name="newsLang" id="newsLang" required>
+                                        <option value="none" selected>Select a value</option>
+                                        <option value="en">English</option>
+                                        <option value="ta">Tamil</option>
+                                        <option value="hi">Hindi</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="divTwitter" style="display:none" class="form-group">
+                            <div class="form-group">
+                                <div class="row">
+                                    <div class="col"><label for="twitHashTag"># Hash tag to search</label></div>
+                                    <div class="col"><input type="text" name="twitHashTag" id="twitHashTag"></div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="row">
+                                    <div class="col"><label for="twitDate">Date to search</label></div>
+                                    <div class="col"><input type="date" name="twitDate" id="twitDate"></div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="row">
+                                    <div class="col"><label for="twitLimit">No# of tweet to pull</label></div>
+                                    <!-- <div class="col"><input type="text" name="twitLimit" id="twitLimit"></div> -->
+                                    <div class="col"><input type="number" min=1 value=100 name="twitLimit"
+                                            id="twitLimit"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="divFile" style="display:none" class="form-group">
+                            <div class="row">
+                                <div class="col"><label for="fileUpload">Upload File [txt, csv, xls(x)]</label></div>
+                                <div class="col"><input type="file" name="fileUpload" id="fileUpload"></div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <table style="width: 100%;">
+                                <tr>
+                                    <td width="50%" align="right" style="padding: 30px;">
+                                        <button type="submit" class="btn btn-primary"
+                                            style="width: 100px; margin-right:16px;" onclick="predict()">Submit</button>
+                                    </td>
+                                    <td style="padding: 30px;">
+                                        <button type="reset" class="btn btn-primary" onclick="window.location.reload();"
+                                            style="width: 100px;">Clear</button>
+                                    </td>
+                            </table>
+                        </div>
+                    </form>
+                </div>
+            </td>
+            <td width="50%" valign="top" style="font-weight: bold;">
+                <center><h1 style="align-content: center;padding: 1%; font-weight: bolder;"> Prediction </h1></center>
+                <div id="divPredictiont"></div>
+            </td>
+        </tr>
+    </table>
+
+</body>
+<script language="javascript">
+    function sourceChange(selectedId) {
+        document.getElementById("divFile").style.display = "none";
+        document.getElementById("divTwitter").style.display = "none";
+        document.getElementById("divNews").style.display = "none";
+        document.getElementById("divAudio").style.display = "none";
+        document.getElementById("divImage").style.display = "none";
+        document.getElementById("divManualText").style.display = "none";
+        document.getElementById("div" + selectedId.value).style.display = "block";
+    }
+
+    function predict() {
+        var source = document.getElementById("source").value;
+        var newsLang = document.getElementById("newsLang").value;
+        var audioUpload = document.getElementById("audioUpload");
+        var imageUpload = document.getElementById("imageUpload");
+        var fileUpload = document.getElementById("fileUpload");
+        var manualText = document.getElementById("manualText").value;
+        var twitHashTag = document.getElementById("twitHashTag").value;
+        var twitDate = document.getElementById("twitDate").value;
+        var twitLimit = document.getElementById("twitLimit").value;
+        var formData = new FormData();
+
+
+        formData.append("source", source)
+        if (source == "News") {
+            if (newsLang == null || newsLang == "none" || newsLang == undefined || newsLang == "") {
+                alert('News Language must be selected');
+                return false;
+            }
+            else {
+                formData.append("newsLang", newsLang);
+            }
+        }
+        else if (source == "File") {
+            if (fileUpload == null || fileUpload == "") {
+                alert('Upload a txt/csv/excel file');
+                return false;
+            }
+            else {
+                formData.append("fileNameList", fileUpload.files[0].name);
+                formData.append("filesList", fileUpload.files[0]);
+            }
+        }
+        else if (source == "Audio") {
+            if (audioUpload == null || audioUpload == "") {
+                alert('Upload a mp3/wav audio file');
+                return false;
+            }
+            else {
+                formData.append("fileNameList", audioUpload.files[0].name);
+                formData.append("filesList", audioUpload.files[0]);
+            }
+        }
+        else if (source == "Image") {
+            if (imageUpload == null || imageUpload == "") {
+                alert('Upload a jpg/png/gif audio file');
+                return false;
+            }
+            else {
+                formData.append("fileNameList", imageUpload.files[0].name);
+                formData.append("filesList", imageUpload.files[0]);
+            }
+        }
+        else if (source == "ManualText") {
+            if (manualText == null || manualText == "") {
+                alert('Text can not be blank. Enter some text in input box');
+                return false;
+            }
+            else {
+                formData.append("manualText", manualText);
+            }
+        }
+        else if (source == "Twitter") {
+            var errorMsg = ""
+            if (twitHashTag == null || twitHashTag == "") {
+                errorMsg = errorMsg + '#Hasg tag can not be bank. ';
+            }
+            if (twitDate == null || twitDate == "") {
+                errorMsg = errorMsg + 'Tweet search start date can not be blank. ';
+            }
+            if (twitLimit == null || twitLimit == "") {
+                errorMsg = errorMsg + 'Tweet limit can not be blank. ';
+            }
+            if (errorMsg != "") {
+                alert(errorMsg);
+                return false;
+            }
+
+            formData.append("twitHashTag", twitHashTag);
+            formData.append("twitDate", twitDate);
+            formData.append("twitLimit", twitLimit);
+        }
+        else {
+            alert('Source must be selected');
+            return false;
+        }
+
+        var msg = "";
+        var errorMsg = "";
+        var input;
+        var output;
+
+        $.ajax({
+            type: 'POST',
+            url: '/predict',
+            cache: false,
+            contentType: false,
+            processData: false,
+            async: false,
+            data: formData,
+            success: function (response) {
+                $.each(response, function (key, data) {
+                    if (key == "inputList") {
+                        input = data.slice();
+                    }
+                    else if (key == "outputList") {
+                        output = data.slice();
+                    }
+                    else {
+                        errorMsg = '<tr><td><b>' + key + '</b></td><td>' + data + '</td></tr>';
+                    }
+                })
+            },
+            error: function (response) {
+                errorMsg = '<h1 style="align-content: center;padding: 10%; font-weight: bold; color: red;"> Error in Prediction</h1>';
+            }
+        });
+        if (errorMsg != "") {
+            msg = '<h1 style="align-content: center;padding: 10%; font-weight: bold; color: red;">' + errorMsg + '</h1>';
+        }
+        else {
+            for (var i = 0; i < input.length; i++) {
+                msg = msg + '<tr><td width="50%" valign="top">' + input[i] + '</td><td width="50%" valign="top">' + output[i] + '</td></tr>';
+            }
+            msg = '<table class="table table-striped"> <tr><th width="50%" valign="top"><b>Input</b></th> <th width="50%" valign="top"> <B>Sentiment Prediction </B></th> </tr>' + msg + '</table>';
+        }
+        document.getElementById("divPredictiont").innerHTML = msg;
+    }
+
+    $("#formPredict").submit(function (e) {
+        e.preventDefault();
+    });
+</script>
+
+</html>
